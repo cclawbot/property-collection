@@ -84,6 +84,40 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home...,Active
 ```
 
+### Step 6.5: Validate Existing URLs (Incremental Run Only)
+
+**For Incremental Runs, validate ALL existing properties before adding new ones:**
+
+1. **Load existing CSV** with all properties
+
+2. **For each existing property**:
+   - Make HTTP GET request to the property URL
+   - Check response:
+     - **200 OK**: Property still active → keep in CSV
+     - **404/410/Gone**: Property removed/sold → **REMOVE from CSV** (log as "REMOVED: URL invalid")
+     - **302/Redirect**: May be sold → investigate manually, mark status as "Sold?"
+   
+3. **Batch efficiency**:
+   ```python
+   import concurrent.futures
+   
+   def check_url(row):
+       try:
+           r = requests.head(row['URL'], timeout=10, allow_redirects=True)
+           if r.status_code in [200, 301, 302]:
+               return row, "active"
+           else:
+               return row, "removed"
+       except:
+           return row, "error"
+   
+   # Check in parallel (max 10 concurrent)
+   with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+       results = list(executor.map(check_url, existing_rows))
+   ```
+
+4. **Update CSV**: Remove invalid properties, keep active ones
+
 **Address Normalization for Duplicate Check**:
 ```python
 import re
@@ -163,12 +197,12 @@ Provide user with the Google Sheets URL for review.
 - Withdrawn from market
 - Passed in at auction
 
-**Workaround Options**:
-1. **Manual Check**: Periodically visit original URLs to verify status
-2. **Full Re-run**: Do a full 30-day search monthly to catch removed properties
-3. **Add Status Column**: Add `status` column (Active/Sold/Withdrawn) and check periodically
+**Solution** (Automated in Step 6.5):
+1. **URL Check**: Before adding new listings, validate ALL existing property URLs
+2. **Auto-Remove**: If URL returns 404/410, automatically remove from CSV
+3. **Monthly Full Check**: Still recommend monthly full 30-day re-run for edge cases
 
-## CSV Format Reference
+### Step 7: Export to Google Sheets
 
 Exact column order for compatibility:
 
@@ -197,12 +231,13 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 
 **Initial Run** (first time):
 - Start with empty CSV or delete existing file
+- Search past 30 days
 - All properties will be collected
 
 **Incremental Run** (update existing):
-- Keep existing CSV file
-- Script will auto-detect and skip duplicates
-- Only new listings will be added
+1. **Step 6.5 FIRST**: Validate existing URLs, remove invalid ones
+2. **Then Step 6**: Search past 7 days, add new properties (skip duplicates)
+3. Keep existing CSV file
 
 ### General Tips
 
