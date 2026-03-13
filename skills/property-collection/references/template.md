@@ -1,10 +1,10 @@
 # CSV Template
 
 ```csv
-Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description
-455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://www.realestate.com.au/property-455-springvale-road-glen-waverley-vic-3150,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home in quiet street close to schools and shops...
-28 Angus Drive,Glen Waverley,$1,880,000,4,2,2,650 sqm,https://www.realestate.com.au/property-28-angus-drive-glen-waverley-vic-3150,TBC,Private Sale,08 Mar 2026,,Spacious modern family home with open plan living...
-2A Gwingana Crescent,Glen Waverley,$2,050,000,5,3,2,612 sqm,https://www.realestate.com.au/property-2a-gwingana-crescent-glen-waverley-vic-3150,Yes,Auction,05 Mar 2026,29 Mar 2026,Stunning family residence with pool and landscaped gardens...
+Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description,status
+455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://www.realestate.com.au/property-455-springvale-road-glen-waverley-vic-3150,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home in quiet street close to schools and shops...,Active
+28 Angus Drive,Glen Waverley,$1,880,000,4,2,2,650 sqm,https://www.realestate.com.au/property-28-angus-drive-glen-waverley-vic-3150,TBC,Private Sale,08 Mar 2026,,Spacious modern family home with open plan living...,Active
+2A Gwingana Crescent,Glen Waverley,$2,050,000,5,3,2,612 sqm,https://www.realestate.com.au/property-2a-gwingana-crescent-glen-waverley-vic-3150,Yes,Auction,05 Mar 2026,29 Mar 2026,Stunning family residence with pool and landscaped gardens...,Sold
 ```
 
 # Column Definitions
@@ -24,6 +24,7 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 | listing_date | "DD MMM YYYY" | Listing metadata |
 | auction_date | "DD MMM YYYY" or "TBC" or empty | Auction details |
 | description | Max 500 chars | Listing description text |
+| status | Active/Sold/Withdrawn | Manual check required |
 
 # Sample Suburbs (Melbourne)
 

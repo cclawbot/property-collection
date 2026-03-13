@@ -80,8 +80,8 @@ Click "Next" or pagination until no more results. Collect all properties across 
 3. **Save to CSV** with exact columns:
 
 ```csv
-Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description
-455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home in quiet street...
+Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description,status
+455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home...,Active
 ```
 
 **Address Normalization for Duplicate Check**:
@@ -126,36 +126,47 @@ if normalize_address(new_address) not in existing_addresses:
 
 ### Step 7: Export to Google Sheets
 
+**Determine Run Mode**:
+
+| Mode | When | Search Range | Action |
+|------|------|--------------|--------|
+| **Initial Run** | First time / fresh start | Past 30 days | Create NEW Google Sheet |
+| **Incremental Run** | Subsequent updates | Past 7 days | Add to EXISTING Sheet |
+
+**Initial Run** (first time):
 ```bash
-# Create Google Sheet and upload CSV
-gcloud auth list  # Ensure authenticated
+# Search 30 days, create new sheet
 gsheet create "property_candidate_list_$(date +%Y%m%d_%H%M)" --title "Property Candidates"
-gsheet upload /path/to/properties.csv --title "Property Candidates"
 ```
 
-Or use Google Drive API:
+**Incremental Run** (update existing):
 ```python
+# Add to existing sheet (by spreadsheet ID)
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-
-# Build drive service
 service = build('drive', 'v3', credentials=creds)
 
-# Create spreadsheet
-file_metadata = {
-    'name': f'property_candidate_list_{datetime.now().strftime("%Y%m%d_%H%M")}',
-    'mimeType': 'application/vnd.google-apps.spreadsheet'
-}
-file = service.files().create(body=file_metadata, fields='id').execute()
+# Get existing sheet ID (store this after initial run)
+EXISTING_SHEET_ID = "YOUR_SHEET_ID_HERE"
 
-# Upload CSV
-media = MediaFileUpload('properties.csv', mimetype='text/csv')
-service.files().update(fileId=file['id'], media_body=media).execute()
+# Read CSV and append to sheet
+# Use sheets API to append rows
 ```
 
 ### Step 8: Share Sheet Link
 
 Provide user with the Google Sheets URL for review.
+
+### Important Limitation: Removed/Sold Properties
+
+**Problem**: Incremental runs cannot detect properties that have been:
+- Sold
+- Withdrawn from market
+- Passed in at auction
+
+**Workaround Options**:
+1. **Manual Check**: Periodically visit original URLs to verify status
+2. **Full Re-run**: Do a full 30-day search monthly to catch removed properties
+3. **Add Status Column**: Add `status` column (Active/Sold/Withdrawn) and check periodically
 
 ## CSV Format Reference
 
@@ -178,6 +189,7 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 - **listing_date**: Date listed (e.g., "12 Mar 2026")
 - **auction_date**: Auction date if known (e.g., "22 Mar 2026", "TBC", or empty)
 - **description**: Property description summary (max 500 chars)
+- **status**: Active/Sold/Withdrawn (default: Active, manual update needed)
 
 ## Tips
 
