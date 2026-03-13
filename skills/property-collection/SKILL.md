@@ -188,9 +188,71 @@ EXISTING_SHEET_ID = "YOUR_SHEET_ID_HERE"
 # Use sheets API to append rows
 ```
 
-### Step 9: Share Sheet Link
+### Step 9: Add Collaborators (Initial Run Only)
 
-Provide user with the Google Sheets URL for review.
+After creating the new Google Sheet, add collaborators with read/download access:
+
+```python
+from googleapiclient.discovery import build
+
+def add_collaborators(spreadsheet_id, emails):
+    """Add collaborators to Google Sheet"""
+    service = build('drive', 'v3', credentials=creds)
+    
+    for email in emails:
+        # Share with read access
+        permission = {
+            'type': 'user',
+            'role': 'reader',
+            'emailAddress': email
+        }
+        service.permissions().create(
+            fileId=spreadsheet_id,
+            body=permission,
+            sendNotificationEmail=False
+        ).execute()
+        print(f"Added collaborator: {email}")
+
+# Initial Run: Add collaborators
+COLLABORATORS = [
+    "lizhuohang.selina@gmail.com",
+    "bianbianzhu123@gmail.com"
+]
+add_collaborators(SPREADSHEET_ID, COLLABORATORS)
+```
+
+### Step 10: Notify Users
+
+After both Initial and Incremental Runs, send notification to Discord:
+
+```python
+import requests
+
+def notify_completion(channel_id, sheet_url, stats):
+    """Notify vanilakk and Bianbian via Discord"""
+    message = {
+        "content": f"📊 **Property Search Complete!**\n\n"
+                   f"📋 Total properties: {stats['total']}\n"
+                   f"✅ Active: {stats['active']}\n"
+                   f"❌ Removed (sold/unavailable): {stats['removed']}\n"
+                   f"➕ New added: {stats['new']}\n\n"
+                   f"📑 Google Sheet: {sheet_url}"
+    }
+    
+    # Send to Discord channel
+    webhook_url = "YOUR_DISCORD_WEBHOOK_URL"
+    requests.post(webhook_url, json=message)
+
+# Example stats
+stats = {
+    "total": 45,
+    "active": 42,
+    "removed": 3,
+    "new": 5
+}
+```
+
+**Tag users**: Use `@vanilakk` and `@Bianbian` in message to notify both.
 
 ### Important Limitation: Removed/Sold Properties
 
