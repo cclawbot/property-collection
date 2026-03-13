@@ -1,6 +1,6 @@
 ---
 name: property-collection
-description: Collect Melbourne property listings from realestate.com.au into CSV with Google Sheets export. Use when: (1) user wants to find properties in Melbourne suburbs, (2) searching for houses with specific filters (price, beds, baths, land size), (3) building a candidate list for property investment, (4) enriching property data with swimming pool tracking.
+description: Collect Melbourne property listings from realestate.com.au into CSV with Google Sheets export. Use when user wants to find properties in Melbourne suburbs, search with filters (price, beds, baths, land size), build candidate list for property investment, or enrich property data.
 ---
 
 # Property Collection Skill
