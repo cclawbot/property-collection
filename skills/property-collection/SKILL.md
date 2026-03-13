@@ -63,30 +63,9 @@ For each listing on results page, record:
 
 Click "Next" or pagination until no more results. Collect all properties across all pages for each suburb.
 
-### Step 6: Save to CSV (with Duplicate Check)
+### Step 6: Validate Existing URLs (Incremental Run Only)
 
-**This step supports both Initial Run and Incremental Run:**
-
-1. **Check if CSV exists**:
-   - If existing CSV found, load addresses into a set for deduplication
-   - If no CSV exists, start fresh
-
-2. **For each property collected**:
-   - Normalize address (strip whitespace, handle variations)
-   - Check if address already in existing CSV
-   - **If duplicate found**: Skip (log as "SKIPPED: already exists")
-   - **If new**: Append to CSV
-
-3. **Save to CSV** with exact columns:
-
-```csv
-Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description,status
-455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home...,Active
-```
-
-### Step 6.5: Validate Existing URLs (Incremental Run Only)
-
-**For Incremental Runs, validate ALL existing properties before adding new ones:**
+**For Incremental Runs, validate ALL existing properties BEFORE adding new ones:**
 
 1. **Load existing CSV** with all properties
 
@@ -117,6 +96,29 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
    ```
 
 4. **Update CSV**: Remove invalid properties, keep active ones
+
+**Note**: Skip this step for Initial Run (no existing CSV to validate).
+
+### Step 7: Save to CSV (with Duplicate Check)
+
+**This step supports both Initial Run and Incremental Run:**
+
+1. **Check if CSV exists**:
+   - If existing CSV found, load addresses into a set for deduplication
+   - If no CSV exists, start fresh
+
+2. **For each property collected**:
+   - Normalize address (strip whitespace, handle variations)
+   - Check if address already in existing CSV
+   - **If duplicate found**: Skip (log as "SKIPPED: already exists")
+   - **If new**: Append to CSV
+
+3. **Save to CSV** with exact columns:
+
+```csv
+Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description,status
+455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home...,Active
+```
 
 **Address Normalization for Duplicate Check**:
 ```python
@@ -158,7 +160,7 @@ if normalize_address(new_address) not in existing_addresses:
 - **auction_date**: Exact auction date if applicable (e.g., "22 Mar 2026", "TBC", or empty)
 - **description**: Property description/summary from listing (max 500 characters, strip HTML)
 
-### Step 7: Export to Google Sheets
+### Step 8: Export to Google Sheets
 
 **Determine Run Mode**:
 
@@ -186,7 +188,7 @@ EXISTING_SHEET_ID = "YOUR_SHEET_ID_HERE"
 # Use sheets API to append rows
 ```
 
-### Step 8: Share Sheet Link
+### Step 9: Share Sheet Link
 
 Provide user with the Google Sheets URL for review.
 
@@ -233,10 +235,11 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 - Start with empty CSV or delete existing file
 - Search past 30 days
 - All properties will be collected
+- Skip Step 6 (no existing CSV to validate)
 
 **Incremental Run** (update existing):
-1. **Step 6.5 FIRST**: Validate existing URLs, remove invalid ones
-2. **Then Step 6**: Search past 7 days, add new properties (skip duplicates)
+1. **Step 6 FIRST**: Validate existing URLs, remove invalid ones
+2. **Then Step 7**: Search past 7 days, add new properties (skip duplicates)
 3. Keep existing CSV file
 
 ### General Tips
