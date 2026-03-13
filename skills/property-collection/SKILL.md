@@ -167,7 +167,7 @@ if normalize_address(new_address) not in existing_addresses:
 | Mode | When | Search Range | Action |
 |------|------|--------------|--------|
 | **Initial Run** | First time / fresh start | Past 30 days | Create NEW Google Sheet |
-| **Incremental Run** | Subsequent updates | Past 7 days | Add to EXISTING Sheet |
+| **Incremental Run** | Subsequent updates | Past 10 days | Add to EXISTING Sheet |
 
 **Initial Run** (first time):
 ```bash
@@ -239,7 +239,7 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 
 **Incremental Run** (update existing):
 1. **Step 6 FIRST**: Validate existing URLs, remove invalid ones
-2. **Then Step 7**: Search past 7 days, add new properties (skip duplicates)
+2. **Then Step 7**: Search past 10 days, add new properties (skip duplicates)
 3. Keep existing CSV file
 
 ### General Tips
