@@ -63,13 +63,50 @@ For each listing on results page, record:
 
 Click "Next" or pagination until no more results. Collect all properties across all pages for each suburb.
 
-### Step 6: Save to CSV
+### Step 6: Save to CSV (with Duplicate Check)
 
-Save collected data to CSV with exact columns:
+**This step supports both Initial Run and Incremental Run:**
+
+1. **Check if CSV exists**:
+   - If existing CSV found, load addresses into a set for deduplication
+   - If no CSV exists, start fresh
+
+2. **For each property collected**:
+   - Normalize address (strip whitespace, handle variations)
+   - Check if address already in existing CSV
+   - **If duplicate found**: Skip (log as "SKIPPED: already exists")
+   - **If new**: Append to CSV
+
+3. **Save to CSV** with exact columns:
 
 ```csv
 Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description
 455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home in quiet street...
+```
+
+**Address Normalization for Duplicate Check**:
+```python
+import re
+
+def normalize_address(addr):
+    # Strip extra spaces, convert to lowercase
+    addr = addr.strip().lower()
+    # Remove unit numbers for comparison (e.g., "2A" vs "2")
+    addr = re.sub(r'^[0-9]+[a-z]+\s', '', addr)  # "2A Springvale" -> "Springvale"
+    # Remove common suffixes
+    addr = re.sub(r'\s+(road|st|avenue|dr|drive|cr|crescent|ave|place)$', '', addr)
+    return addr
+
+# Usage
+existing_addresses = set()
+with open('properties.csv', 'r') as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        existing_addresses.add(normalize_address(row['Address']))
+
+# Check before adding
+if normalize_address(new_address) not in existing_addresses:
+    writer.writerow(new_row)
 ```
 
 **Column Definitions**:
@@ -143,6 +180,19 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 - **description**: Property description summary (max 500 chars)
 
 ## Tips
+
+### Running Modes
+
+**Initial Run** (first time):
+- Start with empty CSV or delete existing file
+- All properties will be collected
+
+**Incremental Run** (update existing):
+- Keep existing CSV file
+- Script will auto-detect and skip duplicates
+- Only new listings will be added
+
+### General Tips
 
 - Check multiple pages (realestate.com.au shows ~20 per page)
 - Suburb spelling must match exactly for filtering
