@@ -54,6 +54,10 @@ For each listing on results page, record:
 - Land Size
 - URL (listing link)
 - **include_swimming_pool** (Yes/No/Unknown - check listing photos/description)
+- **sale_method** (Auction/Private Sale/Unknown)
+- **listing_date** (exact date listed, e.g., "12 Mar 2026")
+- **auction_date** (exact auction date if applicable, e.g., "22 Mar 2026" or "TBC")
+- **description** (property description/summary from listing, max 500 chars)
 
 ### Step 5: Navigate Pages
 
@@ -64,11 +68,24 @@ Click "Next" or pagination until no more results. Collect all properties across 
 Save collected data to CSV with exact columns:
 
 ```csv
-Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
-455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No
+Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description
+455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home in quiet street...
 ```
 
-**Important column**: `include_swimming_pool` - Look for pool in listing photos or description. Mark "Yes" if pool visible, "No" if confirmed no pool, "TBC" if uncertain.
+**Column Definitions**:
+- **Address**: Street address (e.g., "455 Springvale Road")
+- **Suburb**: Suburb name (e.g., "Glen Waverley")
+- **Price**: Listed price (e.g., "$1,950,000" or "Price on Request")
+- **Bedrooms**: Number of bedrooms
+- **Bathrooms**: Number of bathrooms
+- **Cars**: Garage/carport spaces
+- **Land Size**: Land area (e.g., "756 sqm")
+- **URL**: Full URL to listing
+- **include_swimming_pool**: Yes/No/TBC - Look for pool in listing photos or description
+- **sale_method**: Auction/Private Sale/Unknown - Check listing for auction details
+- **listing_date**: Exact date property was listed (e.g., "12 Mar 2026")
+- **auction_date**: Exact auction date if applicable (e.g., "22 Mar 2026", "TBC", or empty)
+- **description**: Property description/summary from listing (max 500 characters, strip HTML)
 
 ### Step 7: Export to Google Sheets
 
@@ -108,7 +125,7 @@ Provide user with the Google Sheets URL for review.
 Exact column order for compatibility:
 
 ```
-Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
+Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description
 ```
 
 - **Address**: Street address (e.g., "455 Springvale Road")
@@ -120,6 +137,10 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 - **Land Size**: Land area (e.g., "756 sqm")
 - **URL**: Full URL to listing
 - **include_swimming_pool**: Yes/No/TBC
+- **sale_method**: Auction/Private Sale/Unknown
+- **listing_date**: Date listed (e.g., "12 Mar 2026")
+- **auction_date**: Auction date if known (e.g., "22 Mar 2026", "TBC", or empty)
+- **description**: Property description summary (max 500 chars)
 
 ## Tips
 
