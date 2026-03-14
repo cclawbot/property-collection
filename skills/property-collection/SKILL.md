@@ -116,8 +116,8 @@ Click "Next" or pagination until no more results. Collect all properties across 
 3. **Save to CSV** with exact columns:
 
 ```csv
-Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description,status
-455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home...,Active
+Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool,sale_method,listing_date,auction_date,description,status,inspected_or_not,inspection_date,inspection_note
+455 Springvale Road,Glen Waverley,$1,950,000,4,2,2,756 sqm,https://...,No,Auction,10 Mar 2026,22 Mar 2026,Excellent family home...,Active,No,,
 ```
 
 **Address Normalization for Duplicate Check**:
@@ -159,6 +159,10 @@ if normalize_address(new_address) not in existing_addresses:
 - **listing_date**: Exact date property was listed (e.g., "12 Mar 2026")
 - **auction_date**: Exact auction date if applicable (e.g., "22 Mar 2026", "TBC", or empty)
 - **description**: Property description/summary from listing (max 500 characters, strip HTML)
+- **status**: Active/Sold/Withdrawn (default: Active, auto-updated via URL check)
+- **inspected_or_not**: Yes/No (default: No, update after inspection)
+- **inspection_date**: Date of inspection (e.g., "21 Mar 2026" or empty)
+- **inspection_note**: Notes from inspection visit (max 500 chars, e.g., "Good natural light, noisy neighbor, negotiated price $1,900,000")
 
 ### Step 8: Export to Google Sheets
 
@@ -287,7 +291,10 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 - **listing_date**: Date listed (e.g., "12 Mar 2026")
 - **auction_date**: Auction date if known (e.g., "22 Mar 2026", "TBC", or empty)
 - **description**: Property description summary (max 500 chars)
-- **status**: Active/Sold/Withdrawn (default: Active, manual update needed)
+- **status**: Active/Sold/Withdrawn (auto-updated via URL validation)
+- **inspected_or_not**: Yes/No (default: No, update after inspection)
+- **inspection_date**: Date of inspection (e.g., "21 Mar 2026" or empty, typically Saturday)
+- **inspection_note**: Notes from inspection visit (max 500 chars)
 
 ## Tips
 
@@ -310,4 +317,40 @@ Address,Suburb,Price,Bedrooms,Bathrooms,Cars,Land Size,URL,include_swimming_pool
 - Suburb spelling must match exactly for filtering
 - Some prices shown as "Price on Request" - record as-is
 - Look for pool in listing photos (swimming pool icon or visible pool)
+
+### Inspection Workflow (Weekly)
+
+**Inspection Day**: Saturday (default)
+
+1. **Before Inspection**: User reviews Google Sheet, selects properties to visit
+2. **After Inspection**: User tells you the inspection results
+3. **You Update**: Update the following columns in Google Sheet:
+   - `inspected_or_not`: Yes
+   - `inspection_date`: Date of inspection (e.g., "21 Mar 2026")
+   - `inspection_note`: Notes like:
+     - Property condition issues
+     - Agent feedback / asking price
+     - Negotiation outcome
+     - Your recommendation
+
+**Example Update Request**:
+> "28 Angus Drive inspected, Yes
+> Inspection date: 21 Mar 2026
+> Note: Good natural light but noisy neighbor. Negotiated to $1,900,000"
+
+**Example Update Command**:
+```python
+# Update via Google Sheets API
+def update_inspection_row(spreadsheet_id, address, inspected, date, note):
+    service = build('sheets', 'v4', credentials=creds)
+    
+    # Find row by address
+    result = service.sheets().values().get(
+        spreadsheetId=spreadsheet_id,
+        range="A:A"
+    ).execute()
+    
+    # Update columns O, P, Q (inspected_or_not, inspection_date, inspection_note)
+    # ...
+```
 - Export timestamp in filename for version tracking
