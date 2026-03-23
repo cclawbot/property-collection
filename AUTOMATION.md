@@ -4,6 +4,21 @@ Run the full property pipeline: collect new listings → enrich, filter, score, 
 
 **Schedule:** Tuesday and Friday mornings
 
+## Scheduler Policy (authoritative)
+
+Use **OpenClaw cron only** for this automation. Do **not** rely on system `crontab`, ad-hoc shell scripts in `/tmp`, or any parallel scheduler.
+
+Run this automation in a **dedicated property pipeline session/thread** so the pipeline context stays isolated from normal chat.
+
+### Model policy
+
+- **Do not hard-code a specific model in this file.**
+- The **parent scheduled run** chooses the model.
+- Any spawned child/sub-agent tasks should **inherit the parent model by default**.
+- Only use an explicit model override at spawn time when a specific run needs it (for example, if collection/browser extraction becomes unusually complex).
+
+This keeps the workflow model-agnostic while still allowing a given scheduled run to use GPT-5.4 or switch back to MiniMax without editing this document.
+
 ---
 
 ## Step 1: First-time setup (skip if repo already cloned)
@@ -62,9 +77,23 @@ If there are merge conflicts (e.g. in `analysis/src/`), resolve them before proc
 
 ## Step 5: Run the pipeline
 
-Run the `/property-pipeline` skill.
+Run the `/property-pipeline` skill in the dedicated property pipeline session/thread.
 
 Follow `skills/property-pipeline/SKILL.md` in full — but **skip the "sync with upstream" step** inside that skill, since it was already done in Step 2 above.
+
+### Execution contract
+
+The run must follow this exact order:
+
+1. Sync repo (`git pull origin main`)
+2. Sync upstream (`git fetch upstream && git merge upstream/main`)
+3. **Run collection**
+4. **Verify collection really happened**
+5. Run analysis from the repo root with the virtualenv active
+6. Verify a new output directory was created for this run
+7. Commit and push results
+
+If collection did not happen, **fail the run instead of continuing to analysis**.
 
 ### ⚠️ Verification — MUST NOT SKIP
 
@@ -95,3 +124,10 @@ git add data/property/ output/
 git commit -m "feat: property pipeline run [property-searcher]"
 git push origin main
 ```
+
+## Operational notes
+
+- Use `source .venv/bin/activate` before running the analysis command.
+- If the latest CSV is still an old file, or if no new run directory appears under `output/`, treat the automation as failed.
+- Prefer one parent scheduled run that owns the whole workflow. Child tasks may be spawned for collection or diagnostics, but they should inherit the parent model unless there is an explicit one-off override.
+- The scheduler configuration should be the place where model choice is controlled; this file defines workflow, not model selection.
